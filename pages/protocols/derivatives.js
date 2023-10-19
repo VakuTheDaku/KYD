@@ -1,3 +1,4 @@
+import Title from "@/components/Heading"
 import { Tab, Tabs } from "@nextui-org/react"
 import axios from "axios"
 import { useEffect } from "react"
@@ -31,17 +32,26 @@ export default function Derivatives() {
     }, [])
     return (
         <div className="bg-black min-h-screen">
+            <Title/>
             <div className="flex w-full flex-col">
                 <Tabs aria-label="Options" color="primary" variant="bordered">
-                    <Tab
-                        key="photos"
-                        title={
-                            <div className="flex items-center space-x-2">
+                    {
+                        coins.map((coin) => {
+                            return (
+                                <Tab
+                                    key={coin.name}
+                                    title={
+                                        <div className="flex items-center space-x-2">
 
-                                <span>Photos</span>
-                            </div>
-                        }
-                    />
+                                            <span>{coin.name}</span>
+                                        </div>
+                                    }
+                                >
+                                </Tab>
+                            )
+                        })
+                    }
+
                 </Tabs>
             </div>
         </div>
