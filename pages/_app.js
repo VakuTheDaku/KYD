@@ -1,11 +1,14 @@
-import Title from '@/components/Heading';
+import Title from '@/components/Title';
+import Layout from '@/components/Layout';
 import '@/styles/globals.css'
 import { NextUIProvider } from "@nextui-org/react";
 
 export default function App({ Component, pageProps }) {
   return (
     <NextUIProvider>
-      <Component {...pageProps} />
+      <Layout>
+        <Component {...pageProps} />
+      </Layout>
     </NextUIProvider>
   )
 }
