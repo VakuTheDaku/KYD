@@ -22,7 +22,8 @@ export default function Derivatives() {
         axios.get("https://api.gmx.io/prices")
             .then(function (response) {
                 // Handle successful response
-                console.log('Data:', response.data)
+                console.log('BTC:', (response.data["0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f"]) / 1e30);
+                console.log('ETH:', response.data["0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"] / 1e30);
             })
             .catch(function (error) {
                 // Handle error
