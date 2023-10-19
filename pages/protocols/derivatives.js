@@ -1,13 +1,16 @@
+import PriceBox from "@/components/PriceBox"
 import Title from "@/components/Title"
 import { Tab, Tabs } from "@nextui-org/react"
 import axios from "axios"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { ethers } from "ethers"
 
 export default function Derivatives() {
     let ARB_RPC = "https://arb-mainnet.g.alchemy.com/v2/OBoyPdhJhmm0DrJTUGZzs0Urxh408Z53";
     const provider = new ethers.providers.JsonRpcProvider(ARB_RPC);
 
+    const [btcPrice, setBtcPrice] = useState()
+    const [ethPrice, setEthPrice] = useState()
     const protocols = [{
         name: "dydx",
 
@@ -32,7 +35,6 @@ export default function Derivatives() {
                 // console.log('ETH:', ethPrice);
             })
             .catch(function (error) {
-                // Handle error
                 console.error('Error:', error);
                 return res.status(400).json({ success: false, message: "Couldn't fetch data" })
             });
@@ -123,16 +125,7 @@ export default function Derivatives() {
                                         </div>
                                     }
                                 >
-                                    <div className="w-full nobar overflow-x-auto">
-                                        {/* table header  */}
-                                        <div className="w-full min-w-[25rem] mt-8 mb-4 text-xs text-white text-opacity-50 flex justify-between">
-                                            <span className="min-w-[20%]">Name</span>
-                                            <span className="min-w-[20%]">1d change</span>
-                                            <span className="min-w-[20%]">1m change</span>
-                                            <span className="min-w-[20%]">TVL</span>
-                                            <span className="min-w-[20%]">Mcap/TVL</span>
-                                        </div>
-                                    </div>
+                                    <PriceBox name={coin.name} price={coin.name === "BTC" ? btcPrice : ethPrice} />
                                 </Tab>
                             )
                         })
