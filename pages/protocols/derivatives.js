@@ -30,9 +30,11 @@ export default function Derivatives() {
         name: "ETH"
     }]
     useEffect(() => {
+        let ethPrice;
         axios.get("https://api.gmx.io/prices")
             .then(function (response) {
                 // Handle successful response
+                ethPrice = response.data["0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"] / 1e30
                 setPrice(coin === "BTC" ? response.data["0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f"] / 1e30 : response.data["0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"] / 1e30);
             })
             .catch(function (error) {
@@ -72,8 +74,8 @@ export default function Derivatives() {
             let swapFees;
             let executionFee;
 
-            let leverage = 10;
-            let size = 10000;
+            let leverage = 50;
+            let size = 10000 * leverage;
             let BPS_DIVIDER = 10000;
 
             const GMXREADER = "0x2b43c90D1B727cEe1Df34925bcd5Ace52Ec37694";
@@ -85,22 +87,17 @@ export default function Derivatives() {
             let tx = await contract.getAmountOut(GMXVAULT, USDC, ETH, size * 1e6 / leverage);
             swapFees = JSON.parse(tx[1]) * ethPrice / 1e18;
             console.log('swapFees: ', swapFees);
+            let amountOut = JSON.parse(tx[0]) * ethPrice/1e18;
+            console.log('swap amount out: ', amountOut);
 
+            
+            sizeAfterFees =  ((amountOut * 1e6) - (amountOut * leverage * 1e6 *  10 / BPS_DIVIDER)) * leverage /1e6
 
-            let collateralAfterSwapAndOpeningFees =
-                (size * 1e6 / leverage) - (swapFees * 1e6 / BPS_DIVIDER) - (size * 1e6 * 10 / BPS_DIVIDER);
-            sizeAfterFees = (collateralAfterSwapAndOpeningFees / 100) * leverage / BPS_DIVIDER;
-            openFees = closeFees = sizeAfterFees * 10 / BPS_DIVIDER
+            openFees = closeFees = sizeAfterFees  *  10 / BPS_DIVIDER;
+
             console.log('sizeAfterAllFees: $', sizeAfterFees);
             console.log('closeFees: $', closeFees);
             console.log('openFees: $', openFees);
-
-            const GMXPOSITIONROUTER = "0xb87a436B93fFE9D75c5cFA7bAcFff96430b09868";
-            contract = new ethers.Contract(GMXPOSITIONROUTER, ['function minExecutionFee() view returns (uint256)'], provider);
-            tx = await contract.minExecutionFee();
-            let executionFeeInEth = (JSON.parse(tx) / 1e18) + 0.00003;
-            executionFee = executionFeeInEth * ethPrice;
-            console.log('executionFee: $', executionFee);
         }
         getLongFees()
 
