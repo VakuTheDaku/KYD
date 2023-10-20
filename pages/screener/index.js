@@ -12,7 +12,10 @@ export default function Derivatives() {
     const [color, setColor] = useState("success")
     const [price, setPrice] = useState()
     const [bet, setBet] = useState(1)
-    const [coin, setCoin] = useState()
+    const [coin, setCoin] = useState({
+        name: "BTC",
+        address: "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f"
+    })
     const [maxLiquidity, setMaxLiquidity] = useState()
     const [fundingRate, setFundingRate] = useState()
     const [fees, setFees] = useState({})
@@ -27,21 +30,23 @@ export default function Derivatives() {
     }]
 
     const coins = [{
-        name: "BTC"
+        name: "BTC",
+        address: "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f"
     },
     {
-        name: "ETH"
+        name: "ETH",
+        address: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
     }]
     async function getGMXFees({ bet }) {
-        if (bet === 1) {
+        if (bet === 1 && coin) {
             let sizeAfterFees;
             let openFees;
             let closeFees;
             let swapFees;
             let executionFee;
 
-            let leverage = 10;
-            let size = 10000;
+            let leverage = 50;
+            let size = 10000 * leverage;
             let BPS_DIVIDER = 10000;
 
             const GMXREADER = "0x2b43c90D1B727cEe1Df34925bcd5Ace52Ec37694";
@@ -50,10 +55,11 @@ export default function Derivatives() {
             const BTC = "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f";
             const ETH = "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1";
             let contract = new ethers.Contract(GMXREADER, ['function getAmountOut(address,address,address,uint256) view returns (uint256, uint256)'], provider);
-            let tx = await contract.getAmountOut(GMXVAULT, USDC, ETH, size * 1e6 / leverage);
+            let tx = await contract.getAmountOut(GMXVAULT, USDC, coin.address , size * 1e6 / leverage);
             swapFees = JSON.parse(tx[1]) * price / 1e18;
             console.log('swapFees: ', swapFees);
-
+            let amountOut = JSON.parse(tx[0]) * price / 1e18;
+            console.log('swap amount out: ', amountOut);
 
             let collateralAfterSwapAndOpeningFees =
                 (size * 1e6 / leverage) - (swapFees * 1e6 / BPS_DIVIDER) - (size * 1e6 * 10 / BPS_DIVIDER);
@@ -109,9 +115,11 @@ export default function Derivatives() {
         setFees({ ...fees })
     }
     useEffect(() => {
+        let ethPrice;
         axios.get("https://api.gmx.io/prices")
             .then(function (response) {
                 // Handle successful response
+                ethPrice = response.data["0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"] / 1e30
                 setPrice(coin === "BTC" ? response.data["0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f"] / 1e30 : response.data["0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"] / 1e30);
             })
             .catch(function (error) {
@@ -143,8 +151,7 @@ export default function Derivatives() {
             .catch(function (error) {
                 console.error('Error:', error);
                 return res.status(400).json({ success: false, message: "Couldn't fetch data" })
-            });
-
+            })
     }, [coin, bet])
 
     useEffect(() => {
@@ -190,7 +197,7 @@ export default function Derivatives() {
                 </Tabs>
                 <Tabs aria-label="Options" color="primary" variant="bordered" onSelectionChange={(selectedKey) => {
                     console.log("selected", selectedKey)
-                    setCoin(selectedKey)
+                    setCoin(coins.find((coin)=>coin.name===selectedKey))
                 }
                 }>
                     {
