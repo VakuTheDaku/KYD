@@ -42,73 +42,7 @@ export default function Derivatives() {
         address: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
         decimals : 1e18
     }]
-    async function getGMXFees({ bet }) {
-        if (bet === 1 && coin && maxLiquidity && price && fundingRate && leverage && amount) {
-            let sizeAfterFees;
-            let openFees;
-            let closeFees;
-            let swapFees;
-            let executionFee;
-            let size = amount * leverage;
-            let BPS_DIVIDER = 10000;
-
-            const GMXREADER = "0x2b43c90D1B727cEe1Df34925bcd5Ace52Ec37694";
-            const GMXVAULT = "0x489ee077994B6658eAfA855C308275EAd8097C4A";
-            const USDC = "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8";
-            const BTC = "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f";
-            const ETH = "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1";
-            let contract = new ethers.Contract(GMXREADER, ['function getAmountOut(address,address,address,uint256) view returns (uint256, uint256)'], provider);
-            let tx = await contract.getAmountOut(GMXVAULT, USDC, coin.address, size * 1e6 / leverage);
-            swapFees = JSON.parse(tx[1]) * price / 1e18;
-            console.log('swapFees: ', swapFees);
-            let amountOut = JSON.parse(tx[0]) * price / coin.decimals;
-            console.log('swap amount out: ', amountOut);
-            
-            sizeAfterFees = (amountOut - (amountOut * leverage * 10 / BPS_DIVIDER)) * leverage
-            openFees = closeFees = sizeAfterFees * 10 / BPS_DIVIDER
-            console.log('sizeAfterAllFees: $', sizeAfterFees);
-            console.log('closeFees: $', closeFees);
-            console.log('openFees: $', openFees);
-
-            const GMXPOSITIONROUTER = "0xb87a436B93fFE9D75c5cFA7bAcFff96430b09868";
-            contract = new ethers.Contract(GMXPOSITIONROUTER, ['function minExecutionFee() view returns (uint256)'], provider);
-            tx = await contract.minExecutionFee();
-            let executionFeeInEth = (JSON.parse(tx) / 1e18) + 0.00003;
-            executionFee = executionFeeInEth * price;
-            console.log('executionFee: $', executionFee);
-            let fees = {
-                'Price': price, 'Max Liquidity' : maxLiquidity, 'Funding Rate': fundingRate, 'Execution Fee': executionFee, 'Opening Fees': openFees, 'Closing Fees': closeFees, 'Size After Fees': sizeAfterFees
-            }
-            return fees
-        }
-        else if (bet === 0 && coin && maxLiquidity && price && fundingRate && leverage && amount) {
-            let sizeAfterFees;
-            let openFees;
-            let closeFees;
-            let swapFees = 0;
-            let executionFee;
-
-            let size = amount * leverage;
-            let BPS_DIVIDER = 10000;
-
-            sizeAfterFees = ((amount) - (size * 10 / BPS_DIVIDER)) *  leverage ;
-            openFees = closeFees = sizeAfterFees * 10 / BPS_DIVIDER
-            console.log('sizeAfterAllFees: $', sizeAfterFees);
-            console.log('closeFees: $', closeFees);
-            console.log('openFees: $', openFees);
-
-            const GMXPOSITIONROUTER = "0xb87a436B93fFE9D75c5cFA7bAcFff96430b09868";
-            const contract = new ethers.Contract(GMXPOSITIONROUTER, ['function minExecutionFee() view returns (uint256)'], provider);
-            const tx = await contract.minExecutionFee();
-            let executionFeeInEth = (JSON.parse(tx) / 1e18) + 0.00003;
-            executionFee = executionFeeInEth * price;
-            console.log('executionFee: $', executionFee);
-            let fees = {
-                'Price': price, 'Max Liquidity' : maxLiquidity, 'Funding Rate': fundingRate, 'Execution Fee': executionFee, 'Opening Fees': openFees, 'Closing Fees': closeFees, 'Size After Fees': sizeAfterFees
-            }
-            return fees
-        }
-    }
+   
     async function fixFees() {
         setFees({})
         const fees = await getGMXFees({ bet })
@@ -116,44 +50,7 @@ export default function Derivatives() {
     }
     useEffect(() => {
         let ethPrice;
-        axios.get("https://api.gmx.io/prices")
-            .then(function (response) {
-                // Handle successful response
-                ethPrice = response.data["0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"] / 1e30
-                setPrice(coin.name === "BTC" ? response.data["0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f"] / 1e30 : response.data["0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"] / 1e30);
-            })
-            .catch(function (error) {
-                // Handle error
-                console.error('Error:', error);
-            });
-
-        axios.get("https://api.gmx.io/tokens")
-            .then(function (response) {
-                // Handle successful response
-                if (coin.name === "BTC")
-                    setMaxLiquidity(bet === 1 ? ((response.data[1].data.maxGlobalLongSize - response.data[1].data.guaranteedUsd) / 1e30) : ((response.data[1].data.maxGlobalShortSize - response.data[1].data.globalShortSize) / 1e30));
-                else
-                    setMaxLiquidity(bet === 1 ? ((response.data[2].data.maxGlobalLongSize - response.data[2].data.guaranteedUsd) / 1e30) : ((response.data[2].data.maxGlobalShortSize - response.data[2].data.globalShortSize) / 1e30));
-            })
-            .catch(function (error) {
-                // Handle error
-                console.error('Error:', error);
-            });
-
-        axios.get("https://api.gmx.io/tokens")
-            .then(function (response) {
-                // Handle successful response
-                if (coin.name === "BTC")
-                    setFundingRate(bet === 1 ? ((response.data[1].data.fundingRate) / 1e4) : ((response.data[5].data.fundingRate) / 1e4));
-                else
-                    setFundingRate(bet === 1 ? ((response.data[2].data.fundingRate) / 1e4) : ((response.data[5].data.fundingRate) / 1e4));
-            })
-            .catch(function (error) {
-                console.error('Error:', error);
-                return res.status(400).json({ success: false, message: "Couldn't fetch data" })
-            })
-
-        async function cap() {
+                async function cap() {
             const connection = new EvmPriceServiceConnection(
                 "https://hermes-beta.pyth.network"
             ); // See Hermes endpoints section below for other endpoints
