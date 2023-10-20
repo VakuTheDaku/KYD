@@ -4,7 +4,7 @@ import { NextUIProvider } from "@nextui-org/react";
 
 export default function App({ Component, pageProps }) {
   return (
-    <NextUIProvider>
+    <NextUIProvider className='bg-black min-h-screen'>
       <Layout>
         <Component {...pageProps} />
       </Layout>

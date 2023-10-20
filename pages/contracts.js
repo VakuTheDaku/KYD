@@ -1,4 +1,4 @@
-import { Code } from "@nextui-org/react"
+import { Code, Snippet } from "@nextui-org/react"
 
 export default function Contracts() {
     const code = `contract NavigationVerifier {
@@ -22,15 +22,17 @@ export default function Contracts() {
     }`
     return (
         <div className='bg-black min-h-screen'>
-            <div className=" text-white font-bold pl-40 uppercase pt-10">
-                Navigation Sign Contract :
-            </div>
-            <div className="grid place-items-center gap-1">
+            <div className="grid place-items-center gap-2">
+                <div className=" text-white font-bold uppercase pt-10">
+                    Navigation Sign Contract :
+                </div>
+                <Snippet color="primary">
 
-                {code.split('\n').map((line, index) =>
-                    <Code color="primary" key={index} className="min-w-[40%]">
-                        {line}
-                    </Code>)}
+                    {code.split('\n').map((line, index) =>
+                        <span key={index}>
+                            {line}
+                        </span>)}
+                </Snippet>
             </div>
         </div>
     )
