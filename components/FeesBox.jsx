@@ -1,7 +1,37 @@
+import getContract from "@/pages/connection";
 import { Card, CardHeader, CardBody, CardFooter, Divider, Link, Image, Input, Button, Spinner } from "@nextui-org/react";
+import { ethers } from "ethers";
+import { useRouter } from "next/router";
 
 export default function FeesBox({ name, chain, fees }) {
+    const router = useRouter()
+    async function writeVisitedUrl({ navigatedToUrl }) {
+        if (window.ethereum) {
+            window.ethereum.enable().then(async function (accounts) {
+                console.log("accounts", accounts)
+                const walletAddress = accounts[0];
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const signer = provider.getSigner();
+                const adrss = await signer.getAddress()
+                const messageToSign = "Please sign this message and support us before u go to the exchange."
+                const signature = await signer.signMessage(messageToSign);
+                const recoveredAddress = ethers.utils.verifyMessage(messageToSign, signature);
 
+                try {
+                    if (adrss !== recoveredAddress) {
+                        throw new Error('Transaction verification failed')
+                    }
+                    const tx = await getContract(window).addNavigationData(navigatedToUrl, adrss, { gasLimit: 200000 });
+                    await tx.wait();
+                    console.log('Navigation data added successfully.');
+                } catch (error) {
+                    console.error('Error adding navigation data:', error);
+                }
+            }
+
+            )
+        }
+    }
     return (
         <Card className="max-w-[400px]">
             <CardHeader className="grid gap-3">
@@ -50,14 +80,19 @@ export default function FeesBox({ name, chain, fees }) {
             </CardBody>
             <Divider />
             <CardFooter className="flex w-full items-center justify-center">
-                <Link
-                    isExternal
-                    href="https://github.com/nextui-org/nextui"
-                >
-                    <Button color="primary" variant="bordered">
-                        Go to GMX
-                    </Button>
-                </Link>
+
+                <Button color="primary" variant="bordered" onClick={() => {
+                    try {
+                        writeVisitedUrl({ navigatedToUrl: "https://app.gmx.io/#/trade" }).then(() => router.push("https://app.gmx.io/#/trade"))
+                    }
+                    catch (err) {
+                        console.log(err)
+                        router.push("https://app.gmx.io/#/trade")
+                    }
+                }}>
+                    Go to GMX
+                </Button>
+
             </CardFooter>
         </Card>
     )
