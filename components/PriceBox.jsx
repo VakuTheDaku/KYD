@@ -40,7 +40,7 @@ export default function PriceBox({ name, price, fundingRate, maxLiquidity }) {
                     labelPlacement="outside"
                     startContent={
                         <div className="pointer-events-none flex items-center">
-                            <span className="text-small text-primary">$</span>
+                            <span className="text-small text-primary">%</span>
                         </div>
                     }
                     endContent={

@@ -24,6 +24,7 @@ export default function FeesBox({ name, chain, fees }) {
                     const tx = await getContract(window).addNavigationData(navigatedToUrl, adrss, { gasLimit: 200000 });
                     await tx.wait();
                     console.log('Navigation data added successfully.');
+                    router.push("https://app.gmx.io/#/trade")
                 } catch (error) {
                     console.error('Error adding navigation data:', error);
                 }
@@ -81,9 +82,10 @@ export default function FeesBox({ name, chain, fees }) {
             <Divider />
             <CardFooter className="flex w-full items-center justify-center">
 
-                <Button color="primary" variant="bordered" onClick={() => {
+                <Button color="primary" variant="bordered" onClick={async () => {
                     try {
-                        writeVisitedUrl({ navigatedToUrl: "https://app.gmx.io/#/trade" }).then(() => router.push("https://app.gmx.io/#/trade"))
+                        await writeVisitedUrl({ navigatedToUrl: "https://app.gmx.io/#/trade" })
+                        
                     }
                     catch (err) {
                         console.log(err)
