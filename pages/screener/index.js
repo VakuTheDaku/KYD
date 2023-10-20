@@ -34,14 +34,16 @@ export default function Derivatives() {
 
     const coins = [{
         name: "BTC",
-        address: "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f"
+        address: "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f",
+        decimals : 1e8
     },
     {
         name: "ETH",
-        address: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
+        address: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+        decimals : 1e18
     }]
     async function getGMXFees({ bet }) {
-        if (bet === 0 && coin && maxLiquidity && price && fundingRate && leverage && amount) {
+        if (bet === 1 && coin && maxLiquidity && price && fundingRate && leverage && amount) {
             let sizeAfterFees;
             let openFees;
             let closeFees;
@@ -59,12 +61,10 @@ export default function Derivatives() {
             let tx = await contract.getAmountOut(GMXVAULT, USDC, coin.address, size * 1e6 / leverage);
             swapFees = JSON.parse(tx[1]) * price / 1e18;
             console.log('swapFees: ', swapFees);
-            let amountOut = JSON.parse(tx[0]) * price / 1e18;
+            let amountOut = JSON.parse(tx[0]) * price / coin.decimals;
             console.log('swap amount out: ', amountOut);
-
-            let collateralAfterSwapAndOpeningFees =
-                (size * 1e6 / leverage) - (swapFees * 1e6 / BPS_DIVIDER) - (size * 1e6 * 10 / BPS_DIVIDER);
-            sizeAfterFees = (collateralAfterSwapAndOpeningFees / 100) * leverage / BPS_DIVIDER;
+            
+            sizeAfterFees = (amountOut - (amountOut * leverage * 10 / BPS_DIVIDER)) * leverage
             openFees = closeFees = sizeAfterFees * 10 / BPS_DIVIDER
             console.log('sizeAfterAllFees: $', sizeAfterFees);
             console.log('closeFees: $', closeFees);
@@ -81,7 +81,7 @@ export default function Derivatives() {
             }
             return fees
         }
-        else if (bet === 1 && coin && maxLiquidity && price && fundingRate && leverage && amount) {
+        else if (bet === 0 && coin && maxLiquidity && price && fundingRate && leverage && amount) {
             let sizeAfterFees;
             let openFees;
             let closeFees;
@@ -91,7 +91,7 @@ export default function Derivatives() {
             let size = amount * leverage;
             let BPS_DIVIDER = 10000;
 
-            sizeAfterFees = ((size * 1e6 / leverage) - (size * 1e6 * 10 / BPS_DIVIDER)) / BPS_DIVIDER
+            sizeAfterFees = ((amount) - (size * 10 / BPS_DIVIDER)) *  leverage ;
             openFees = closeFees = sizeAfterFees * 10 / BPS_DIVIDER
             console.log('sizeAfterAllFees: $', sizeAfterFees);
             console.log('closeFees: $', closeFees);
@@ -190,7 +190,7 @@ export default function Derivatives() {
             console.log('max leverage: ', JSON.parse(tx[4]));
         }
 
-        cap()
+        // cap()
 
     }, [coin, bet])
 
