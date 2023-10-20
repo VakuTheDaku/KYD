@@ -10,6 +10,8 @@ import FeesBox from "@/components/FeesBox"
 import { EvmPriceServiceConnection } from "@pythnetwork/pyth-evm-js"
 
 export default function Derivatives() {
+    const [amount, setAmount] = useState(1000)
+    const [leverage, setLeverage] = useState(10)
     const [color, setColor] = useState("success")
     const [price, setPrice] = useState()
     const [bet, setBet] = useState(1)
@@ -39,15 +41,13 @@ export default function Derivatives() {
         address: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
     }]
     async function getGMXFees({ bet }) {
-        if (bet === 1 && coin) {
+        if (bet === 0 && coin && maxLiquidity && price && fundingRate && leverage && amount) {
             let sizeAfterFees;
             let openFees;
             let closeFees;
             let swapFees;
             let executionFee;
-
-            let leverage = 50;
-            let size = 10000 * leverage;
+            let size = amount * leverage;
             let BPS_DIVIDER = 10000;
 
             const GMXREADER = "0x2b43c90D1B727cEe1Df34925bcd5Ace52Ec37694";
@@ -77,19 +77,18 @@ export default function Derivatives() {
             executionFee = executionFeeInEth * price;
             console.log('executionFee: $', executionFee);
             let fees = {
-                'Execution Fee': executionFee, 'Opening Fees': openFees, 'Closing Fees': closeFees, 'Size After Fees': sizeAfterFees
+                'Price': price, 'Max Liquidity' : maxLiquidity, 'Funding Rate': fundingRate, 'Execution Fee': executionFee, 'Opening Fees': openFees, 'Closing Fees': closeFees, 'Size After Fees': sizeAfterFees
             }
             return fees
         }
-        else if (bet === 0) {
+        else if (bet === 1 && coin && maxLiquidity && price && fundingRate && leverage && amount) {
             let sizeAfterFees;
             let openFees;
             let closeFees;
             let swapFees = 0;
             let executionFee;
 
-            let leverage = 10;
-            let size = 1000;
+            let size = amount * leverage;
             let BPS_DIVIDER = 10000;
 
             sizeAfterFees = ((size * 1e6 / leverage) - (size * 1e6 * 10 / BPS_DIVIDER)) / BPS_DIVIDER
@@ -105,7 +104,7 @@ export default function Derivatives() {
             executionFee = executionFeeInEth * price;
             console.log('executionFee: $', executionFee);
             let fees = {
-                'Execution Fee': executionFee, 'Opening Fees': openFees, 'Closing Fees': closeFees, 'Size After Fees': sizeAfterFees
+                'Price': price, 'Max Liquidity' : maxLiquidity, 'Funding Rate': fundingRate, 'Execution Fee': executionFee, 'Opening Fees': openFees, 'Closing Fees': closeFees, 'Size After Fees': sizeAfterFees
             }
             return fees
         }
@@ -153,7 +152,7 @@ export default function Derivatives() {
                 console.error('Error:', error);
                 return res.status(400).json({ success: false, message: "Couldn't fetch data" })
             })
-            
+
         async function cap() {
             const connection = new EvmPriceServiceConnection(
                 "https://hermes-beta.pyth.network"
@@ -197,10 +196,9 @@ export default function Derivatives() {
 
     useEffect(() => {
         if (price && bet !== undefined || null) {
-            console.log(">>", price, bet)
             fixFees()
         }
-    }, [price, bet])
+    }, [price, bet, amount, leverage])
     return (
         <div className="bg-black min-h-screen pt-2">
             <div className="flex w-full flex-col justify-center items-center gap-4">
@@ -255,11 +253,11 @@ export default function Derivatives() {
                                     className="grid gap-3 w-[60%]"
                                 >
                                     <div className="grid place-items-center">
-                                        <PriceBox name={coin.name} price={price} maxLiquidity={maxLiquidity} fundingRate={fundingRate} />
+                                        <PriceBox amount={amount} setAmount={setAmount} leverage={leverage} setLeverage={setLeverage} price={price} maxLiquidity={maxLiquidity} fundingRate={fundingRate} />
                                     </div>
                                     <div className="grid grid-cols-2 w-full">
                                         <div className="col-span-1 w-full">
-                                            <FeesBox name={"GMX"} chain={"Arbitrum"} fees={fees} />
+                                            <FeesBox name={"GMX"} chain={"Arbitrum"} fees={...fees} />
                                         </div>
                                         <div className="col-span-1">
 

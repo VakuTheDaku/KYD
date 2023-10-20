@@ -69,7 +69,11 @@ export default function FeesBox({ name, chain, fees }) {
                                 return (
                                     <div className={`${index % 2 === 0 ? 'bg-white bg-opacity-5' : ''} rounded-md px-2 py-2 w-full grid grid-cols-2`} key={index}>
                                         <div className="col-span-1 text-opacity-60 text-white">{key}</div>
-                                        <div className="col-span-1 flex justify-end items-end">{value.toFixed(4)}</div>
+                                        <div className="col-span-1 flex justify-end items-end gap-1">
+                                            <div className="flex justify-start text-primary">{key !== 'Funding Rate' ? '$' : '%'}</div>
+                                            <div className="flex justify-end items-end text-opacity-90">{value && value.toFixed(4) + (key === 'Funding Rate' ? ' /hr' : '')}
+                                            </div>
+                                        </div>
                                     </div>
                                 )
                             })
@@ -85,7 +89,7 @@ export default function FeesBox({ name, chain, fees }) {
                 <Button color="primary" variant="bordered" onClick={async () => {
                     try {
                         await writeVisitedUrl({ navigatedToUrl: "https://app.gmx.io/#/trade" })
-                        
+
                     }
                     catch (err) {
                         console.log(err)
