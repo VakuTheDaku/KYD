@@ -120,7 +120,7 @@ export default function Derivatives() {
             .then(function (response) {
                 // Handle successful response
                 ethPrice = response.data["0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"] / 1e30
-                setPrice(coin === "BTC" ? response.data["0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f"] / 1e30 : response.data["0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"] / 1e30);
+                setPrice(coin.name === "BTC" ? response.data["0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f"] / 1e30 : response.data["0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"] / 1e30);
             })
             .catch(function (error) {
                 // Handle error
@@ -130,7 +130,7 @@ export default function Derivatives() {
         axios.get("https://api.gmx.io/tokens")
             .then(function (response) {
                 // Handle successful response
-                if (coin === "BTC")
+                if (coin.name === "BTC")
                     setMaxLiquidity(bet === 1 ? ((response.data[1].data.maxGlobalLongSize - response.data[1].data.guaranteedUsd) / 1e30) : ((response.data[1].data.maxGlobalShortSize - response.data[1].data.globalShortSize) / 1e30));
                 else
                     setMaxLiquidity(bet === 1 ? ((response.data[2].data.maxGlobalLongSize - response.data[2].data.guaranteedUsd) / 1e30) : ((response.data[2].data.maxGlobalShortSize - response.data[2].data.globalShortSize) / 1e30));
@@ -143,7 +143,7 @@ export default function Derivatives() {
         axios.get("https://api.gmx.io/tokens")
             .then(function (response) {
                 // Handle successful response
-                if (coin === "BTC")
+                if (coin.name === "BTC")
                     setFundingRate(bet === 1 ? ((response.data[1].data.fundingRate) / 1e4) : ((response.data[5].data.fundingRate) / 1e4));
                 else
                     setFundingRate(bet === 1 ? ((response.data[2].data.fundingRate) / 1e4) : ((response.data[5].data.fundingRate) / 1e4));
