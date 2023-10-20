@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, Image, Spinner } from "@nextui-org/react";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, Image, Spinner, Badge } from "@nextui-org/react";
 
 export default function News() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -94,19 +94,21 @@ export default function News() {
       })
   }
   return (
-    <div className=" bg-black min-h-screen grid place-items-center">
-      <div className='flex w-[60%] justify-end items-center pt-3'>
-        <Button onPress={onOpen} onClick={() => fetchAnalysis()} className='' variant='shadow' color='primary' startContent={
-          <Image
-            src={"/chatgpt.svg"}
-            className='w-5 h-5'
-            alt='ai'
-          />
-        }>AI News Analysis</Button>
+    <div className=" bg-black min-h-screen grid place-items-center gap-4">
+      <div className='flex w-[60%] items-center pt-3'>
+        <Badge content="β" color="danger" placement="top-right">
+          <Button onPress={onOpen} onClick={() => fetchAnalysis()} className='' variant='shadow' color='primary' startContent={
+            <Image
+              src={"/chatgpt.svg"}
+              className='w-5 h-5'
+              alt='ai'
+            />
+          }>AI News Analysis</Button>
+        </Badge>
       </div>
       <div className="flex flex-col">
         {data &&
-          data.length > 0 &&
+          data.length > 0 ?
           data.map((item, index) => (
             <div key={index} className="flex flex-col">
               <div className="text-sm text-white">
@@ -131,10 +133,13 @@ export default function News() {
                       {news.title}
                     </div>
                   </div>
-                ))}
+                ))
+                }
               </div>
             </div>
-          ))}
+          ))
+          :
+          <Spinner />}
       </div>
       <Modal isOpen={isOpen} onOpenChange={onOpenChange} className='h-96 overflow-y-scroll'>
         <ModalContent>

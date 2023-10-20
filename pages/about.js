@@ -17,6 +17,10 @@ export default function About() {
     {
       title: 'Future Plans',
       description: 'Reputation based ranking system for dexes and more ai analysis on various dexes and prices to produce the best results for our costumers'
+    },
+    {
+      title: 'Blockchain - Avalanche',
+      description: 'Avalanche is designed to be highly scalable, capable of processing thousands of transactions per second.  Avalanche aims to be a blockchain interoperability platform, meaning it can connect with various other blockchains and networks, allowing assets and data to move seamlessly across different chains. This is valuable in a multi-chain ecosystem where different blockchains serve different purposes.'
     }
   ]
   return (

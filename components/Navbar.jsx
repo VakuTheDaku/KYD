@@ -1,4 +1,4 @@
-import { Navbar, NavbarBrand, NavbarContent, NavbarItem, Button } from "@nextui-org/react";
+import { Navbar, NavbarBrand, NavbarContent, NavbarItem, Button, Image, Badge } from "@nextui-org/react";
 import { ethers } from "ethers";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -6,26 +6,28 @@ import { useEffect, useState } from "react";
 export default function Navigationbar() {
     const router = useRouter()
     const path = router.pathname
-    const NavbarItems = [{
-        name: "Home",
-        link: "/"
-    },
-    {
-        name: "About",
-        link: "/about"
-    },
-    {
-        name: "Screener",
-        link: "/screener"
-    },
-    {
-        name: "News",
-        link: "/news"
-    },
-    {
-        name: "Contracts",
-        link: "/contracts"
-    },
+    const NavbarItems = [
+        {
+            name: "Screener",
+            link: "/screener"
+        },
+        {
+            name: "News",
+            link: "/news"
+        },
+        {
+            name: "Ranking",
+            link: "/ranking"
+        },
+        {
+            name: "Contracts",
+            link: "/contracts"
+        },
+
+        {
+            name: "About",
+            link: "/about"
+        },
     ]
 
     const [provider, setProvider] = useState(null);
@@ -66,21 +68,29 @@ export default function Navigationbar() {
     }, [provider]);
     return (
         <Navbar className="bg-black" isBordered>
-            <NavbarBrand>
+            <NavbarBrand onClick={() => router.push('/')} className="hover:cursor-pointer">
 
-                <div className="text-4xl text-white font-semibold text-center">
-                    PERP <span className="text-[#006FEE]">SCREENER</span>
+                <div className=" text-white font-semibold text-center">
+                    <span className="text-2xl">PERP </span><span className="text-[#006FEE] text-md"><span className="text-2xl">$</span>CREENER</span>
                 </div>
 
             </NavbarBrand>
             <NavbarContent className="hidden sm:flex gap-4 text-white" justify="center">
                 {
                     NavbarItems.map((item, index) =>
-                        <NavbarItem isActive={path === item.link} key={index}>
-                            <Link color="foreground" href={item.link}>
-                                {item.name}
-                            </Link>
-                        </NavbarItem>
+                        item.name === 'Ranking' ?
+                            <Badge content="β" color="danger" placement="top-right">
+                                <NavbarItem isActive={path === item.link} key={index}>
+                                    <Link color="foreground" href={item.link}>
+                                        {item.name}
+                                    </Link>
+                                </NavbarItem>
+                            </Badge>
+                            : <NavbarItem isActive={path === item.link} key={index}>
+                                <Link color="foreground" href={item.link}>
+                                    {item.name}
+                                </Link>
+                            </NavbarItem>
                     )
                 }
             </NavbarContent>
