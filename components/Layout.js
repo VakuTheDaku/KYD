@@ -1,9 +1,9 @@
-import Title from "./Title";
+import Navigationbar from "./Navbar";
 
 export default function Layout({ children }) {
     return (
         <>
-            <Title />
+            <Navigationbar />
             <main>{children}</main>
         </>
     )
