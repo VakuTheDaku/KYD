@@ -7,6 +7,7 @@ import { useEffect, useState } from "react"
 import { ethers } from "ethers"
 import { getGMXFees } from "@/utils/getGMXData"
 import FeesBox from "@/components/FeesBox"
+import { EvmPriceServiceConnection } from "@pythnetwork/pyth-evm-js"
 
 export default function Derivatives() {
     const [color, setColor] = useState("success")
@@ -55,7 +56,7 @@ export default function Derivatives() {
             const BTC = "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f";
             const ETH = "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1";
             let contract = new ethers.Contract(GMXREADER, ['function getAmountOut(address,address,address,uint256) view returns (uint256, uint256)'], provider);
-            let tx = await contract.getAmountOut(GMXVAULT, USDC, coin.address , size * 1e6 / leverage);
+            let tx = await contract.getAmountOut(GMXVAULT, USDC, coin.address, size * 1e6 / leverage);
             swapFees = JSON.parse(tx[1]) * price / 1e18;
             console.log('swapFees: ', swapFees);
             let amountOut = JSON.parse(tx[0]) * price / 1e18;
@@ -152,6 +153,46 @@ export default function Derivatives() {
                 console.error('Error:', error);
                 return res.status(400).json({ success: false, message: "Couldn't fetch data" })
             })
+            
+        async function cap() {
+            const connection = new EvmPriceServiceConnection(
+                "https://hermes-beta.pyth.network"
+            ); // See Hermes endpoints section below for other endpoints
+
+            const priceIds = [
+                // You can find the ids of prices at https://pyth.network/developers/price-feed-ids#pyth-evm-testnet
+                "0xf9c0172ba10dfa4d19088d94f5bf61d3b54d5bd7483a322a982e1373ee8ea31b", // BTC/USD price id in testnet
+                "0xca80ba6dc32e08d06f1aa886011eed1d77c77be9eb761cc10d72b7d0a2fd57a6", // ETH/USD price id in testnet
+            ];
+
+            const priceFeeds = await connection.getLatestPriceFeeds(priceIds);
+            console.log("BTC", priceFeeds[0].getPriceNoOlderThan(60)?.price / 1e8);
+            console.log("ETH", priceFeeds[1].getPriceNoOlderThan(60)?.price / 1e8);
+
+            const CAP_READER = "0x1213c30CAb1b126C5A3A0644c483a45AFde80ce7";
+            let contract = new ethers.Contract(CAP_READER, ['function getCapLiquidityBTCandETH() view returns (uint256,uint256)'], provider);
+            let tx = await contract.getCapLiquidityBTCandETH();
+            console.log('max liq BTC: ', JSON.parse(tx[0]) / 1e6);
+            console.log('max liq ETH: ', JSON.parse(tx[1]) / 1e6);
+
+            contract = new ethers.Contract(CAP_READER, ['function getAllCapFunding(uint256) view returns (int256[] memory)'], provider);
+            tx = await contract.getAllCapFunding(2);
+            console.log('BTC Funding: %', -JSON.parse(tx[0]) / 1e20, "/hr");
+            console.log('ETH Funding: %', -JSON.parse(tx[1]) / 1e20, "/hr");
+
+            const MARKET_STORE = "0x328416146a3caa51BfD3f3e25C6F08784f03E276";
+            contract = new ethers.Contract(MARKET_STORE, ['function get(string) view returns (string,string,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256,bytes32,bool,bool)'], provider);
+            tx = await contract.get("ETH-USD");// "ETH-USD";
+
+            let leverage = 10;
+            let size = 100 * leverage;
+            let BPS_DIVIDER = 10000;
+            console.log('opening fees: ', size * JSON.parse(tx[6]) / BPS_DIVIDER);
+            console.log('max leverage: ', JSON.parse(tx[4]));
+        }
+
+        cap()
+
     }, [coin, bet])
 
     useEffect(() => {
@@ -197,7 +238,7 @@ export default function Derivatives() {
                 </Tabs>
                 <Tabs aria-label="Options" color="primary" variant="bordered" onSelectionChange={(selectedKey) => {
                     console.log("selected", selectedKey)
-                    setCoin(coins.find((coin)=>coin.name===selectedKey))
+                    setCoin(coins.find((coin) => coin.name === selectedKey))
                 }
                 }>
                     {
