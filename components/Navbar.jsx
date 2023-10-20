@@ -21,7 +21,12 @@ export default function Navigationbar() {
     {
         name: "News",
         link: "/news"
-    }]
+    },
+    {
+        name: "Contracts",
+        link: "/contracts"
+    },
+    ]
 
     const [provider, setProvider] = useState(null);
     const [address, setAddress] = useState(null)

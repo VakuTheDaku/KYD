@@ -1,9 +1,11 @@
-import Image from 'next/image';
 import { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, Image, Spinner } from "@nextui-org/react";
 
 export default function News() {
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [data, setData] = useState();
+  const [analysis, setAnalysis] = useState();
   useEffect(() => {
     axios
       .get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/news`)
@@ -79,14 +81,34 @@ export default function News() {
         }
       });
   }, []);
-
+  async function fetchAnalysis() {
+    setAnalysis()
+    axios
+      .get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/analyseNews`).then((result) => {
+        if (result.data.success === true) {
+          setAnalysis(result.data.insights)
+        }
+      }).catch(err => {
+        console.log(err)
+        return
+      })
+  }
   return (
     <div className=" bg-black min-h-screen grid place-items-center">
+      <div className='flex w-[60%] justify-end items-center pt-3'>
+        <Button onPress={onOpen} onClick={() => fetchAnalysis()} className='' variant='shadow' color='primary' startContent={
+          <Image
+            src={"/chatgpt.svg"}
+            className='w-5 h-5'
+            alt='ai'
+          />
+        }>AI News Analysis</Button>
+      </div>
       <div className="flex flex-col">
         {data &&
           data.length > 0 &&
           data.map((item, index) => (
-            <div key={index} className="flex flex-col mt-3">
+            <div key={index} className="flex flex-col">
               <div className="text-sm text-white">
                 {item.news.length > 0 && item.title}
               </div>
@@ -114,6 +136,23 @@ export default function News() {
             </div>
           ))}
       </div>
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange} className='h-96 overflow-y-scroll'>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1 text-white">Public Perception and Reputation</ModalHeader>
+              <ModalBody className='text-white grid place-items-center'>
+                {
+                  analysis ? <p dangerouslySetInnerHTML={{ __html: analysis?.replace(/\n/g, '<br>') }}>
+                  </p> : <Spinner />
+                }
+
+              </ModalBody>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </div>
   );
 }
+
