@@ -20,10 +20,13 @@ export default function Navigationbar() {
             link: "/ranking"
         },
         {
+            name: "Review",
+            link: "/review"
+        },
+        {
             name: "Contracts",
             link: "/contracts"
         },
-
         {
             name: "About",
             link: "/about"
@@ -71,7 +74,7 @@ export default function Navigationbar() {
             <NavbarBrand onClick={() => router.push('/')} className="hover:cursor-pointer">
 
                 <div className=" text-white font-semibold text-center">
-                    <span className="text-2xl">PERP </span><span className="text-[#006FEE] text-md"><span className="text-2xl">$</span>CREENER</span>
+                    <span className="text-2xl">K</span><span className="text-[#006FEE] text-md">NOW</span><span className="text-2xl">Y</span><span className="text-[#006FEE] text-md">OUR</span><span className="text-[#006FEE] text-md"><span className=" text-white text-2xl">D</span>EX</span>
                 </div>
 
             </NavbarBrand>

@@ -13,3 +13,25 @@
     min-height: 100vh;
     background: rgb(55, 23, 197);
 }
+/* StarRating.module.css */
+
+.star-rating {
+    display: inline-block;
+    font-size: 0;
+  }
+  
+  .star-rating span {
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0.2rem;
+    transition: color 0.3s;
+  }
+  
+  .star-filled {
+    color: blue;
+  }
+  
+  .star-empty {
+    color: lightgray;
+  }
+  
