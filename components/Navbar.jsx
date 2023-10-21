@@ -82,8 +82,8 @@ export default function Navigationbar() {
                 {
                     NavbarItems.map((item, index) =>
                         item.name === 'Ranking' ?
-                            <Badge content="β" color="danger" placement="top-right">
-                                <NavbarItem isActive={path === item.link} key={index}>
+                            <Badge content="β" color="danger" placement="top-right" key={index}>
+                                <NavbarItem isActive={path === item.link} >
                                     <Link color="foreground" href={item.link}>
                                         {item.name}
                                     </Link>
