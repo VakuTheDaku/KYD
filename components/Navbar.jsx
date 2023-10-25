@@ -37,13 +37,39 @@ export default function Navigationbar() {
     const [address, setAddress] = useState(null)
     const connectToMetaMask = async () => {
         if (window.ethereum) {
-            try {
-                const ethProvider = new ethers.providers.Web3Provider(window.ethereum);
-                await ethProvider.send('eth_requestAccounts', []);
-                setProvider(ethProvider);
-            } catch (error) {
-                console.error(error);
-            }
+            window.ethereum
+                .request({ method: 'eth_requestAccounts' })
+                .then(async () => {
+                    const avalancheFujiConfig = {
+                        chainId: '0xa869',
+                        chainName: 'Avalanche Fuji C-Chain',
+                        rpcUrls: ['https://api.avax-test.network/ext/bc/C/rpc'],
+                        nativeCurrency: {
+                            name: 'Avalanche',
+                            symbol: 'AVAX',
+                            decimals: 18,
+                        },
+                        blockExplorerUrls: ['https://cchain.explorer.avax-test.network/'],
+                    };
+
+                    window.ethereum
+                        .request({
+                            method: 'wallet_addEthereumChain',
+                            params: [avalancheFujiConfig],
+                        })
+                        .then(() => {
+                            // MetaMask is now connected to Avalanche Fuji
+                        })
+                        .catch((error) => {
+                            console.error('Failed to switch network:', error);
+                        });
+                    const ethProvider = new ethers.providers.Web3Provider(window.ethereum);
+                    await ethProvider.send('eth_requestAccounts', []);
+                    setProvider(ethProvider);
+                })
+                .catch((error) => {
+                    console.error('MetaMask connection failed:', error);
+                });
         } else {
             console.log('MetaMask not detected. Please install MetaMask.');
         }
